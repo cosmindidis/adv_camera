@@ -228,4 +228,8 @@ class AdvCameraController {
 //      'maxImage': maxImage,
 //    });
 //  }
+
+  void grantPermissions() {
+    _advCameraState.updatePermissionsState(true);
+  }
 }

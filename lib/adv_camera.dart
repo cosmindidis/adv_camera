@@ -11,8 +11,6 @@ import 'package:flutter/services.dart';
 
 part 'controller.dart';
 
-// test
-
 //class AdvCamera {
 //  static const MethodChannel _channel =
 //      const MethodChannel('adv_camera');
@@ -276,6 +274,14 @@ class _AdvCameraState extends State<AdvCamera> {
   void onImageCaptured(String path) {
     if (widget.onImageCaptured != null) {
       widget.onImageCaptured(path);
+    }
+  }
+
+  void updatePermissionsState(bool value) {
+    if (this.mounted) {
+      setState(() {
+        hasPermission = value;
+      });
     }
   }
 }

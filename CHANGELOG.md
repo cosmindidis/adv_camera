@@ -1,3 +1,35 @@
+## 1.3.1+1
+
+- Fix error when null is passed as focusRectColor
+- Tidy ups
+
+## 1.3.1
+
+- Add checkPermissionAtStartup flag at AdvCamera, to prevent checkPermission at startup
+
+## 1.3.0
+
+- Add manual focus on controller.setFocus, to programmatically set the focus of camera
+- Provide rectangle size and color for AdvCamera initialization
+- Draw rectangle whenever camera gets focused
+
+## 1.2.0
+
+- Do some tidy ups
+
+## 1.1.3+1
+
+- Fix switch camera without result in Android
+
+## 1.1.3
+
+- Fix error when changing into camera without flash (android)
+- add getFlashType
+
+## 1.1.2+3
+
+- fix ios no camera case (for emulator)
+
 ## 1.1.2+2
 
 - turn off camera for android only happen in native

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 void main() {
   String id = DateTime.now().toIso8601String();
-  print("id => $id");
   runApp(MaterialApp(home: MyApp(id: id)));
 }
 
@@ -26,18 +25,22 @@ class _MyAppState extends State<MyApp> {
       appBar: AppBar(
         title: const Text('Home'),
       ),
-      body: Center(child: Text('testing camera')),
+      body: Center(child: Text('Press Floating Button to access camera')),
       floatingActionButton: FloatingActionButton(
-          heroTag: "test3",
-          child: Icon(Icons.camera),
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (BuildContext context) {
-                  String id = DateTime.now().toIso8601String();
-                  print("id => $id");
-                  return CameraApp(id: id);
-                }));
-          }),
+        heroTag: "test3",
+        child: Icon(Icons.camera),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (BuildContext context) {
+                String id = DateTime.now().toIso8601String();
+                return CameraApp(id: id);
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }

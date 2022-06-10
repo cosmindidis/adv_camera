@@ -11,16 +11,6 @@ import 'package:flutter/services.dart';
 
 part 'controller.dart';
 
-//class AdvCamera {
-//  static const MethodChannel _channel =
-//      const MethodChannel('adv_camera');
-//
-//  static Future<String> get platformVersion async {
-//    final String version = await _channel.invokeMethod('getPlatformVersion');
-//    return version;
-//  }
-//}
-
 enum FlashType { auto, on, off, torch }
 enum CameraType { front, rear }
 enum CameraPreviewRatio { r16_9, r11_9, r4_3, r1 }
@@ -33,35 +23,37 @@ class AdvCamera extends StatefulWidget {
   final CameraType initialCameraType;
   final CameraPreviewRatio cameraPreviewRatio;
   final CameraSessionPreset cameraSessionPreset;
-  final CameraCreatedCallback onCameraCreated;
-  final ImageCapturedCallback onImageCaptured;
+  final CameraCreatedCallback? onCameraCreated;
+  final ImageCapturedCallback? onImageCaptured;
   final FlashType flashType;
   final bool bestPictureSize;
-  final String fileNamePrefix;
-  final Color focusRectColor;
-  final int focusRectSize;
-  final bool checkPermissionAtStartup;
+  final String? fileNamePrefix;
+  final Color? focusRectColor;
+  final int? focusRectSize;
+  final bool ignorePermission;
+  final String? savePath;
+  final int? maxSize;
 
   const AdvCamera({
-    Key key,
-    CameraType initialCameraType,
-    CameraPreviewRatio cameraPreviewRatio,
-    CameraSessionPreset cameraSessionPreset,
-    FlashType flashType,
-    bool bestPictureSize,
+    Key? key,
+    CameraType initialCameraType = CameraType.rear,
+    CameraPreviewRatio cameraPreviewRatio = CameraPreviewRatio.r16_9,
+    CameraSessionPreset cameraSessionPreset = CameraSessionPreset.photo,
+    FlashType flashType = FlashType.auto,
+    bool bestPictureSize = true,
     this.onCameraCreated,
     this.onImageCaptured,
     this.fileNamePrefix,
     this.focusRectColor,
     this.focusRectSize,
-    this.checkPermissionAtStartup = true,
-  })  : this.initialCameraType = initialCameraType ?? CameraType.rear,
-        this.cameraPreviewRatio =
-            cameraPreviewRatio ?? CameraPreviewRatio.r16_9,
-        this.cameraSessionPreset =
-            cameraSessionPreset ?? CameraSessionPreset.photo,
-        this.flashType = flashType ?? FlashType.auto,
-        this.bestPictureSize = bestPictureSize ?? true,
+    this.ignorePermission = false,
+    this.savePath,
+    this.maxSize,
+  })  : this.initialCameraType = initialCameraType,
+        this.cameraPreviewRatio = cameraPreviewRatio,
+        this.cameraSessionPreset = cameraSessionPreset,
+        this.flashType = flashType,
+        this.bestPictureSize = bestPictureSize,
         super(key: key);
 
   @override
@@ -69,11 +61,11 @@ class AdvCamera extends StatefulWidget {
 }
 
 class _AdvCameraState extends State<AdvCamera> {
-  Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
-  CameraPreviewRatio _cameraPreviewRatio;
-  CameraSessionPreset _cameraSessionPreset;
-  FlashType _flashType;
-  bool hasPermission = false;
+  Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
+  late CameraPreviewRatio _cameraPreviewRatio;
+  late CameraSessionPreset _cameraSessionPreset;
+  late FlashType _flashType;
+  bool _hasPermission = false;
 
   @override
   void initState() {
@@ -82,13 +74,8 @@ class _AdvCameraState extends State<AdvCamera> {
     _cameraSessionPreset = widget.cameraSessionPreset;
     _flashType = widget.flashType;
 
-    if (widget.checkPermissionAtStartup) {
-      AdvCameraPlugin.checkForPermission().then((value) {
-        if (this.mounted)
-          setState(() {
-            hasPermission = value;
-          });
-      });
+    if (!widget.ignorePermission) {
+      AdvCameraPlugin.checkForPermission().then(setPermission);
     }
   }
 
@@ -98,7 +85,8 @@ class _AdvCameraState extends State<AdvCamera> {
     String sessionPreset;
     String flashType;
 
-    if (!hasPermission) return Center(child: CircularProgressIndicator());
+    if (!_hasPermission && !widget.ignorePermission)
+      return Center(child: CircularProgressIndicator());
 
     switch (_flashType) {
       case FlashType.on:
@@ -148,10 +136,12 @@ class _AdvCameraState extends State<AdvCamera> {
     final Map<String, dynamic> creationParams = <String, dynamic>{
       "initialCameraType":
           widget.initialCameraType == CameraType.rear ? "rear" : "front",
-      "previewRatio": previewRatio,
-      "sessionPreset": sessionPreset,
       "flashType": flashType,
+      "savePath": widget.savePath,
+      "previewRatio": previewRatio,
       "fileNamePrefix": widget.fileNamePrefix ?? "adv_camera",
+      "maxSize": widget.maxSize,
+      "sessionPreset": sessionPreset,
       "bestPictureSize": widget.bestPictureSize,
       "focusRectColorRed": widget.focusRectColor?.red ?? 12,
       "focusRectColorGreen": widget.focusRectColor?.green ?? 199,
@@ -160,7 +150,7 @@ class _AdvCameraState extends State<AdvCamera> {
       //for first run on Android (because on each device the default picture size is vary, for example MI 8 Lite's default is the lowest resolution)
     };
 
-    Widget camera;
+    Widget? camera;
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       camera = AndroidView(
@@ -257,7 +247,7 @@ class _AdvCameraState extends State<AdvCamera> {
     );
 
     if (widget.onCameraCreated != null) {
-      widget.onCameraCreated(controller);
+      widget.onCameraCreated!(controller);
     }
   }
 
@@ -273,8 +263,15 @@ class _AdvCameraState extends State<AdvCamera> {
 
   void onImageCaptured(String path) {
     if (widget.onImageCaptured != null) {
-      widget.onImageCaptured(path);
+      widget.onImageCaptured!(path);
     }
+  }
+
+  FutureOr setPermission(bool value) {
+    if (this.mounted)
+      setState(() {
+        _hasPermission = value;
+      });
   }
 }
 
@@ -282,7 +279,7 @@ class CustomRect extends CustomClipper<Rect> {
   final double right;
   final double bottom;
 
-  CustomRect({this.right, this.bottom});
+  CustomRect({required this.right, required this.bottom});
 
   @override
   Rect getClip(Size size) {

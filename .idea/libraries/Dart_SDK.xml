@@ -1,6 +1,6 @@
 <component name="libraryTable">
   <library name="Dart SDK">
-    <CLASSES>
+        <CLASSES>
       <root url="file://D:/flutter/bin/cache/dart-sdk/lib/async" />
       <root url="file://D:/flutter/bin/cache/dart-sdk/lib/cli" />
       <root url="file://D:/flutter/bin/cache/dart-sdk/lib/collection" />
@@ -22,8 +22,8 @@
       <root url="file://D:/flutter/bin/cache/dart-sdk/lib/web_audio" />
       <root url="file://D:/flutter/bin/cache/dart-sdk/lib/web_gl" />
       <root url="file://D:/flutter/bin/cache/dart-sdk/lib/web_sql" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+    </library>
 </component>

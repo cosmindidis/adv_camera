@@ -1,3 +1,33 @@
+## 2.0.3+2
+
+- More script tidy-up
+
+## 2.0.3
+
+- Migrate Android V2 embedding 
+
+## 2.0.2
+
+- Fix android error for Q above context.getExternalFilesDir(null) replaces Environment.getExternalStorageState() 
+
+## 2.0.1+1
+
+- Fix minor bug on turnOn method
+
+## 2.0.1
+
+- Fix Android torchlight
+- Add turnoff Camera feature (so the flashlight can be used if the camera is turned off)
+
+## 2.0.0+1-nullsafety
+
+- Add SavePath and MaxSize parameter on constructor
+
+## 2.0.0-nullsafety
+
+- Migrate to Null Safety
+- Add Ignore Permission for Camera
+
 ## 1.3.1+1
 
 - Fix error when null is passed as focusRectColor

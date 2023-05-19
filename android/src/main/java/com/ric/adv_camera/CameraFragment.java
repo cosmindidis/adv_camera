@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class CameraFragment extends Fragment {
-    FragmentLifecycleListener listener;
+    CustomFragmentLifecycleListener listener;
     private View view;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
@@ -41,7 +41,6 @@ public class CameraFragment extends Fragment {
 
     @Override
     public void onPause() {
-        Log.d("AdvCamera", "onPause");
         super.onPause();
         if (listener != null)
             listener.onPause();
@@ -57,7 +56,6 @@ public class CameraFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        Log.d("AdvCamera", "onDestroyView");
         super.onDestroyView();
     }
 }

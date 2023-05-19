@@ -1,3 +1,65 @@
+## 3.0.3+4
+
+* Fix switch camera not properly pause the current active camera
+
+## 3.0.3+3
+
+* Minor fix on IOS
+
+## 3.0.3+2
+
+* Minor fix on IOS
+
+## 3.0.3
+
+* Up ios deployment target to 11
+
+## 3.0.2
+
+* Permission fixes for Android 33
+
+## 3.0.1
+
+* Support for Android 33
+
+## 3.0.0
+
+* Support for Flutter 3
+
+## 2.0.3+2
+
+- More script tidy-up
+
+## 2.0.3+2
+
+- More script tidy-up
+
+## 2.0.3
+
+- Migrate Android V2 embedding 
+
+## 2.0.2
+
+- Fix android error for Q above context.getExternalFilesDir(null) replaces Environment.getExternalStorageState() 
+
+## 2.0.1+1
+
+- Fix minor bug on turnOn method
+
+## 2.0.1
+
+- Fix Android torchlight
+- Add turnoff Camera feature (so the flashlight can be used if the camera is turned off)
+
+## 2.0.0+1-nullsafety
+
+- Add SavePath and MaxSize parameter on constructor
+
+## 2.0.0-nullsafety
+
+- Migrate to Null Safety
+- Add Ignore Permission for Camera
+
 ## 1.3.1+1
 
 - Fix error when null is passed as focusRectColor

@@ -45,10 +45,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.platform.PlatformView;
+
+
+interface CustomFragmentLifecycleListener {
+    // These methods are the different events and
+    // need to pass relevant arguments related to the event triggered
+    void onPause();
+
+    // or when data has been loaded
+    void onResume();
+}
 
 class WaitForCameraObject {
     MethodChannel.Result o;
@@ -97,14 +107,14 @@ public class AdvCamera implements MethodChannel.MethodCallHandler,
     AdvCamera(
             int id,
             final Context context,
-            PluginRegistry.Registrar registrar, Object args) {
+            Activity activity, BinaryMessenger messenger, Object args) {
         this.context = context;
-        this.activity = registrar.activity();
+        this.activity = activity;
 
         methodChannel =
-                new MethodChannel(registrar.messenger(), "plugins.flutter.io/adv_camera/" + id);
+                new MethodChannel(messenger, "plugins.flutter.io/adv_camera/" + id);
         methodChannel.setMethodCallHandler(this);
-        view = registrar.activity().getLayoutInflater().inflate(com.ric.adv_camera.R.layout.activity_camera, null);
+        view = activity.getLayoutInflater().inflate(com.ric.adv_camera.R.layout.activity_camera, null);
         imgSurface = view.findViewById(com.ric.adv_camera.R.id.imgSurface);
         final SurfaceView x = view.findViewById(R.id.TransparentView);
         x.setZOrderMediaOverlay(true);
@@ -116,11 +126,17 @@ public class AdvCamera implements MethodChannel.MethodCallHandler,
         imgSurface.setFocusable(true);
         imgSurface.setFocusableInTouchMode(true);
 
-        cameraFragment.listener = new FragmentLifecycleListener() {
+        cameraFragment.listener = new CustomFragmentLifecycleListener() {
             @Override
             public void onPause() {
-                if (camera != null)
+                if (camera != null) {
+                    Camera.Parameters par = camera.getParameters();
+                    par.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                    camera.setParameters(par);
                     camera.stopPreview();
+                    camera.release();
+                    camera = null;
+                }
             }
 
             @Override
@@ -226,6 +242,24 @@ public class AdvCamera implements MethodChannel.MethodCallHandler,
         folder = new File(this.savePath);
         if (!folder.exists()) {
             folder.mkdirs();
+            if (!folder.exists()) {
+                folder = new File(Environment.getExternalStorageDirectory() + "/images");
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                    if (!folder.exists()) {
+                        folder = new File(Environment.getDataDirectory() + "/images");
+                        if (!folder.exists()) {
+                            folder.mkdirs();
+                            if (!folder.exists()) {
+                                folder = new File(context.getExternalFilesDir(null) + "/images");
+                                if (!folder.exists()) {
+                                    folder.mkdirs();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         surfaceHolder = imgSurface.getHolder();
@@ -258,7 +292,15 @@ public class AdvCamera implements MethodChannel.MethodCallHandler,
                     result.success(true);
                 break;
             case "turnOff":
-                camera.stopPreview();
+                if (camera != null) {
+                    camera.stopPreview();
+                    camera.release();
+                    camera = null;
+                }
+                result.success(null);
+                break;
+            case "turnOn":
+                setupCamera();
                 result.success(null);
                 break;
             case "setPreviewRatio": {
@@ -574,14 +616,16 @@ public class AdvCamera implements MethodChannel.MethodCallHandler,
             }
         }
 
-        if (supportedModes != null && !supportedModes.contains(result)) {
-            if (supportedModes.size() > 0) {
-                result = supportedModes.get(0);
-            } else {
-                result = "";
-            }
-        } else {
+        if (supportedModes == null) {
             result = "off";
+        } else {
+            if (!supportedModes.contains(result)) {
+                if (supportedModes.size() > 0) {
+                    result = supportedModes.get(0);
+                } else {
+                    result = "";
+                }
+            }
         }
 
         return result;
@@ -595,9 +639,11 @@ public class AdvCamera implements MethodChannel.MethodCallHandler,
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         try {
-            camera.stopPreview();
-            camera.release();
-            camera = null;
+            if (camera != null) {
+                camera.stopPreview();
+                camera.release();
+                camera = null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -842,6 +888,7 @@ public class AdvCamera implements MethodChannel.MethodCallHandler,
         try {
             OutputStream output;
             File file = new File(folder.getAbsolutePath(), fileNamePrefix + "_" + dateFormat.format(currentTime) + ".jpg");
+            file.createNewFile();
             try {
                 output = new FileOutputStream(file);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);

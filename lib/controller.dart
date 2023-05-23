@@ -190,7 +190,7 @@ class AdvCameraController {
 
     return finalTypes;
   }
-  void grantPermissions() {
-    _advCameraState.updatePermissionsState(true);
-  }
+  // void grantPermissions() {
+  //   _advCameraState.updatePermissionsState(true);
+  // }
 }

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:adv_camera/adv_camera_plugin.dart';
+import 'package:adv_camera/visibility_aware.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -60,12 +61,31 @@ class AdvCamera extends StatefulWidget {
   _AdvCameraState createState() => _AdvCameraState();
 }
 
-class _AdvCameraState extends State<AdvCamera> {
+class _AdvCameraState extends State<AdvCamera> with VisibilityAwareStateMixin<AdvCamera> {
   Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
   late CameraPreviewRatio _cameraPreviewRatio;
   late CameraSessionPreset _cameraSessionPreset;
   late FlashType _flashType;
   bool _hasPermission = false;
+  AdvCameraController? controller;
+
+  @override
+  void didChangeVisibility(bool isVisible) {
+    super.didChangeVisibility(isVisible);
+    if (isVisible) {
+      controller?.turnOnCamera();
+    } else {
+      controller?.turnOffCamera();
+    }
+  }
+
+  @override
+  void dispose() {
+    controller?.turnOffCamera();
+    controller?.channel.invokeMethod("dispose");
+    controller?.channel.setMethodCallHandler(null);
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -245,6 +265,8 @@ class _AdvCameraState extends State<AdvCamera> {
       id,
       this,
     );
+
+    this.controller = controller;
 
     if (widget.onCameraCreated != null) {
       widget.onCameraCreated!(controller);
